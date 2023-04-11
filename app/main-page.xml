@@ -1,4 +1,4 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded" navigatingTo="navigatingTo" >
     <ActionBar>
       <ActionItem position="right" tap="{{ onMenu }}">
         <Button text="&#xf142;" width="40" class="fas" />

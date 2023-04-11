@@ -43,5 +43,18 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLName</key>
+      <string>io.github.eid.mobile</string>
+    </dict>
+    <dict>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>e-id</string>
+      </array>
+    </dict>
+  </array>
 </dict>
 </plist>

@@ -1,6 +1,6 @@
 import * as rs from 'jsrsasign'
 
-import { Button, EventData, Observable, StackLayout, Dialogs, inputType, Http, ListView, ItemEventData } from '@nativescript/core'
+import { Button, EventData, Observable, StackLayout, Dialogs, inputType, Http, ListView, ItemEventData, Utils } from '@nativescript/core'
 import { BarcodeScanner } from 'nativescript-barcodescanner';
 import { SecureStorage } from '@nativescript/secure-storage';
 
@@ -10,6 +10,8 @@ export class MainViewModel extends Observable {
   private _menuLeft: number
   private _menuOn: boolean = false
   private _cards: any[] = []
+  private url: string = ''
+  private urlMode: boolean = false
   private secureStorage: SecureStorage
 
   constructor() {
@@ -112,6 +114,13 @@ export class MainViewModel extends Observable {
 
   public onItemTap(args: ItemEventData): void {
     const list = <ListView>args.object
+    if (this.urlMode) {
+      const data = list.items[args.index]
+      Utils.openUrl(this.url + encodeURIComponent(JSON.stringify(data)))
+      this.urlMode = false
+      this.url = ''
+      return
+    }
     Dialogs.confirm({
       title: 'Preview',
       message: JSON.stringify(list.items[args.index], null, '  '),
@@ -124,6 +133,20 @@ export class MainViewModel extends Observable {
         this.secureStorage.setSync({ key: 'cards', value: JSON.stringify(ids) })
         this.secureStorage.removeSync({ key: ids[args.index] })
         this.cards = this.loadCards()
+      }
+    })
+  }
+
+  public onUrl(urlString: string): void {
+    Dialogs.confirm({
+      title: 'Open e-ID',
+      message: urlString.substring(8, urlString.lastIndexOf('/')) + ' wants to read from your saved cards data inside Open e-ID mobile.\n\nDo you agree?',
+      okButtonText: 'Yes',
+      cancelButtonText: 'No'
+    }).then(result => {
+      if (result) {
+        this.url = urlString
+        this.urlMode = true
       }
     })
   }
