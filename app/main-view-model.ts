@@ -169,6 +169,16 @@ export class MainViewModel extends Observable {
     Http.getJSON('https://dweet.io/get/latest/dweet/for/' + qrCode).then((result: any) => {
       if (result.this === 'succeeded') {
         try {
+          // remove dweet by putting 5 dummy dweets
+          let loop = 0.0
+          const interval = setInterval(() => {
+            loop += 0.1
+            if (loop > 0.5) {
+              clearInterval(interval)
+              return
+            }
+            Http.getJSON('https://dweet.io/dweet/for/' + qrCode + '?now=' + encodeURIComponent(new Date().getTime() + loop)).then((result: any) => { console.log(result) });
+          }, 1500)
           const content = result.with[0].content
           const privateKey = <rs.RSAKey>rs.KEYUTIL.getKey(content.private_key, rs.utf8tohex(password))
           delete content.private_key
