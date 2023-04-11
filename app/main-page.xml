@@ -1,0 +1,44 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo">
+    <ActionBar>
+      <ActionItem position="right" tap="{{ onMenu }}">
+        <Button text="&#xf142;" width="40" class="fas" />
+      </ActionItem>
+      <StackLayout orientation="horizontal">
+        <Image src="res://logo" width="32" height="32" verticalAlignment="center" />
+        <Label text="Open e-ID" fontSize="20" verticalAlignment="center" />
+      </StackLayout>
+    </ActionBar>
+
+    <AbsoluteLayout id="fabView">
+      <Button
+        id="fabButton"
+        text="&#xf029;"
+        left="{{ fabLeft }}"
+        top="{{ fabTop }}"
+        width="80"
+        height="80"
+        class="fas fab-button"
+        tap="{{ onFab }}"
+      />
+      <StackLayout id="mainView" tap="{{ onMain }}" layoutChanged="{{ layoutChanged }}" style="width: 100%; height: 100%;">
+        <ListView
+          items="{{ cards }}"
+          itemTap="{{ onItemTap }}"
+          separatorColor="silver"
+          rowHeight="50"
+          style="height: 100%;"
+        >
+          <ListView.itemTemplate>
+            <StackLayout>
+              <Label text="{{ now }}" textWrap="true" />
+            </StackLayout>
+          </ListView.itemTemplate>
+        </ListView>
+      </StackLayout>
+      <StackLayout id="menuView" class="menu" left="{{ menuLeft }}" visibility="{{ menuOn ? 'visible' : 'collapse' }}">
+        <Button text="Scan" id="scan" tap="{{ onMenuItem }}" />
+        <Button text="Settings" id="settings" tap="{{ onMenuItem }}" />
+        <Button text="About" id="about" tap="{{ onMenuItem }}" />
+      </StackLayout>
+    </AbsoluteLayout>
+</Page>

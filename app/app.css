@@ -1,0 +1,46 @@
+﻿@import '@nativescript/theme/css/core.css';
+@import '@nativescript/theme/css/default.css';
+
+/*
+    File name: fa-solid-900.ttf
+    Font name: Font Awesome 5 Free
+*/
+.fas {
+  font-family: "Font Awesome 5 Free", "fa-solid-900";
+  font-weight: 900;
+}
+
+.fab-button {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  font-size: 40px;
+  border-radius: 160px;
+  background-color: #00d1b2;
+  color: white;
+}
+
+.fab-button:highlighted {
+  color: white;
+}
+
+.menu {
+  background-color: #fafafa;
+  box-shadow: -15px 0px 15px 15px #efefef;
+  width: 200;
+  height: 100%;
+}
+
+#menuView > Button {
+  padding-left: 15;
+  width: 100%;
+  text-align: left;
+  border-width: 0;
+  box-shadow: none;
+  background-color: #fafafa;
+  android-elevation: 0;
+}
+
+#menuView > Button:highlighted {
+  background-color: #efefef;
+}

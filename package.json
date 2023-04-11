@@ -1,0 +1,22 @@
+{
+  "name": "open-eid-mobile",
+  "description": "Open e-ID mobile",
+  "main": "app/app.ts",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@nativescript/core": "~8.5.0",
+    "@nativescript/secure-storage": "^3.0.0",
+    "@nativescript/theme": "~3.0.2",
+    "jsrsasign": "^10.8.1",
+    "nativescript-barcodescanner": "^4.1.2"
+  },
+  "devDependencies": {
+    "@nativescript/android": "8.5.0",
+    "@nativescript/preview-cli": "1.0.2",
+    "@nativescript/types": "~8.5.0",
+    "@nativescript/webpack": "~5.0.14",
+    "@types/jsrsasign": "^10.5.8",
+    "typescript": "~4.8.4"
+  }
+}
