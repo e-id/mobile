@@ -30,7 +30,7 @@
         >
           <ListView.itemTemplate>
             <StackLayout>
-              <Label text="{{ now }}" textWrap="true" />
+              <Label text="{{ (surname ?? '') + ' ' + (firstnames ?? '') }}" textWrap="true" />
             </StackLayout>
           </ListView.itemTemplate>
         </ListView>

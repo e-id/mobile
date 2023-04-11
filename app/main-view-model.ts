@@ -132,6 +132,7 @@ export class MainViewModel extends Observable {
     let barcodescanner = new BarcodeScanner()
     barcodescanner.scan({
       formats: 'QR_CODE, EAN_13',
+      beepOnScan: true,
       openSettingsIfPermissionWasPreviouslyDenied: true,
       presentInRootViewController: true
     }).then((scan) => {
@@ -168,21 +169,24 @@ export class MainViewModel extends Observable {
     Http.getJSON('https://dweet.io/get/latest/dweet/for/' + qrCode).then((result: any) => {
       if (result.this === 'succeeded') {
         try {
-          const privateKey = <rs.RSAKey>rs.KEYUTIL.getKey(result.with[0].content.private_key, rs.utf8tohex(password))
-          const json = rs.KJUR.crypto.Cipher.decrypt(rs.b64tohex(result.with[0].content.content), privateKey, 'RSAOAEP')
-          result = JSON.parse(json)
-          console.log(result)
-          if (Object.keys(result).length > 0) {
-            const id = 'card-' + new Date().getTime()
-            const ids = this.getCardIds()
-            ids.push(id)
-            console.log(ids)
-            this.secureStorage.setSync({ key: 'cards', value: JSON.stringify(ids) })
-            this.secureStorage.setSync({ key: id, value: JSON.stringify(result) })
-            this.cards = this.loadCards()
-            callback(true)
-            return
-          }
+          const content = result.with[0].content
+          const privateKey = <rs.RSAKey>rs.KEYUTIL.getKey(content.private_key, rs.utf8tohex(password))
+          delete content.private_key
+          Object.keys(content).forEach((key: string) => {
+            try {
+              content[key] = rs.b64toutf8(rs.KJUR.crypto.Cipher.decrypt(rs.b64tohex(content[key]), privateKey, 'RSAOAEP'))
+            } catch(e2) {
+              delete content[key]
+            }
+          })
+          const id = 'card-' + new Date().getTime()
+          const ids = this.getCardIds()
+          ids.push(id)
+          this.secureStorage.setSync({ key: 'cards', value: JSON.stringify(ids) })
+          this.secureStorage.setSync({ key: id, value: JSON.stringify(content) })
+          this.cards = this.loadCards()
+          callback(true)
+          return
         } catch(e) {
           console.log(e)
         }
