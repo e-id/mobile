@@ -207,7 +207,15 @@ export class MainViewModel extends Observable {
           delete content.private_key
           Object.keys(content).forEach((key: string) => {
             try {
-              content[key] = rs.b64toutf8(rs.KJUR.crypto.Cipher.decrypt(rs.b64tohex(content[key]), privateKey, 'RSAOAEP'))
+              if (Array.isArray(content[key])) {
+                const chunks = content[key]
+                content[key] = ''
+                chunks.forEach((chunk: string) => {
+                  content[key] += rs.b64toutf8(rs.KJUR.crypto.Cipher.decrypt(rs.b64tohex(chunk), privateKey, 'RSAOAEP'))
+                })
+              } else {
+                content[key] = rs.b64toutf8(rs.KJUR.crypto.Cipher.decrypt(rs.b64tohex(content[key]), privateKey, 'RSAOAEP'))
+              }
             } catch(e2) {
               delete content[key]
             }
