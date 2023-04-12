@@ -3,11 +3,12 @@ import * as rs from 'jsrsasign'
 import { Button, EventData, Observable, StackLayout, Dialogs, inputType, Http, ListView, ItemEventData, Utils } from '@nativescript/core'
 import { BarcodeScanner } from 'nativescript-barcodescanner';
 import { SecureStorage } from '@nativescript/secure-storage';
+import { InAppBrowser } from 'nativescript-inappbrowser';
 
 export class MainViewModel extends Observable {
-  private _fabLeft: number
-  private _fabTop: number
-  private _menuLeft: number
+  private _fabLeft: number = 0
+  private _fabTop: number = 0
+  private _menuLeft: number = 0
   private _menuOn: boolean = false
   private _cards: any[] = []
   private url: string = ''
@@ -179,7 +180,8 @@ export class MainViewModel extends Observable {
     }
     */
     console.log((url + encodeURIComponent(JSON.stringify(data))).length, url + encodeURIComponent(JSON.stringify(data)))
-    Utils.openUrl(url + encodeURIComponent(JSON.stringify(data)))
+    // Utils.openUrl(url + encodeURIComponent(JSON.stringify(data)))
+    InAppBrowser.open(url + encodeURIComponent(JSON.stringify(data)))
     // Dialogs.confirm({
     //   title: 'Preview',
     //   message: JSON.stringify(list.items[args.index], null, '  '),
