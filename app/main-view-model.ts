@@ -192,6 +192,7 @@ export class MainViewModel extends Observable {
     Http.getJSON('https://dweet.io/get/latest/dweet/for/' + qrCode).then((result: any) => {
       if (result.this === 'succeeded') {
         try {
+          const content = result.with[0].content
           // remove dweet by putting 5 dummy dweets
           let loop = 0.0
           const interval = setInterval(() => {
@@ -201,8 +202,7 @@ export class MainViewModel extends Observable {
               return
             }
             Http.getJSON('https://dweet.io/dweet/for/' + qrCode + '?now=' + encodeURIComponent(new Date().getTime() + loop)).then((result: any) => { console.log(result) });
-          }, 1500)
-          const content = result.with[0].content
+          }, 1100)
           const privateKey = <rs.RSAKey>rs.KEYUTIL.getKey(content.private_key, rs.utf8tohex(password))
           delete content.private_key
           Object.keys(content).forEach((key: string) => {
@@ -211,13 +211,14 @@ export class MainViewModel extends Observable {
                 const chunks = content[key]
                 content[key] = ''
                 chunks.forEach((chunk: string) => {
-                  content[key] += rs.b64toutf8(rs.KJUR.crypto.Cipher.decrypt(rs.b64tohex(chunk), privateKey, 'RSAOAEP'))
+                  content[key] += rs.KJUR.crypto.Cipher.decrypt(rs.b64tohex(chunk), privateKey, 'RSAOAEP')
                 })
+                content[key] = decodeURIComponent(rs.hextouricmp(content[key]))
               } else {
-                content[key] = rs.b64toutf8(rs.KJUR.crypto.Cipher.decrypt(rs.b64tohex(content[key]), privateKey, 'RSAOAEP'))
+                content[key] = decodeURIComponent(rs.hextouricmp(rs.KJUR.crypto.Cipher.decrypt(rs.b64tohex(content[key]), privateKey, 'RSAOAEP')))
               }
             } catch(e2) {
-              delete content[key]
+              content[key] = e2.message
             }
           })
           const id = 'card-' + new Date().getTime()
