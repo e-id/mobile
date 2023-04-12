@@ -1,12 +1,12 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded" navigatingTo="navigatingTo" >
     <ActionBar>
-      <ActionItem position="right" tap="{{ onMenu }}">
-        <Button text="&#xf142;" width="40" class="fas" />
-      </ActionItem>
       <StackLayout orientation="horizontal">
         <Image src="res://logo" width="32" height="32" verticalAlignment="center" />
         <Label text="Open e-ID" fontSize="20" verticalAlignment="center" />
       </StackLayout>
+      <ActionItem position="right" tap="{{ onMenu }}">
+        <Button text="{{ menuIcon }}" width="40" class="fas" />
+      </ActionItem>
     </ActionBar>
 
     <AbsoluteLayout id="fabView">
@@ -20,7 +20,7 @@
         class="fas fab-button"
         tap="{{ onFab }}"
       />
-      <StackLayout id="mainView" tap="{{ onMain }}" layoutChanged="{{ layoutChanged }}" style="width: 100%; height: 100%;">
+      <StackLayout id="mainView" layoutChanged="{{ layoutChanged }}" style="width: 100%; height: 100%;">
         <ListView
           items="{{ cards }}"
           itemTap="{{ onItemTap }}"
@@ -30,7 +30,11 @@
         >
           <ListView.itemTemplate>
             <StackLayout>
-              <Label text="{{ (surname ?? '') + ' ' + (firstnames ?? '') }}" textWrap="true" />
+              <WrapLayout>
+                <Label text="{{ selected(id) }}" class="fas" />
+                <Image src="{{ 'data:image/jpeg;base64,' + photo_file }}" />
+                <Label text="{{ (surname ?? '') + ' ' + (firstnames ?? '') + ' ' + validity_end_date }}" textWrap="true" />
+              </WrapLayout>
             </StackLayout>
           </ListView.itemTemplate>
         </ListView>
