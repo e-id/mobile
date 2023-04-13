@@ -24,13 +24,14 @@
         <ListView
           items="{{ cards }}"
           itemTap="{{ onItemTap }}"
+          longPress="{{ onItemPress }}"
           separatorColor="silver"
           rowHeight="50"
           style="height: 100%;"
         >
           <ListView.itemTemplate>
             <StackLayout>
-              <WrapLayout>
+              <WrapLayout id="{{ id }}">
                 <Label text="{{ selected(id) }}" class="fas" />
                 <Image src="{{ 'data:image/jpeg;base64,' + photo_file }}" />
                 <Label text="{{ (surname ?? '') + ' ' + (firstnames ?? '') + ' ' + validity_end_date }}" textWrap="true" />

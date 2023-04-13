@@ -1,6 +1,6 @@
 import * as rs from 'jsrsasign'
 
-import { Button, EventData, Observable, StackLayout, Dialogs, inputType, Http, ListView, ItemEventData, Utils } from '@nativescript/core'
+import { Button, EventData, Observable, StackLayout, Dialogs, inputType, Http, ListView, ItemEventData, Utils, GestureEventData } from '@nativescript/core'
 import { BarcodeScanner } from 'nativescript-barcodescanner';
 import { SecureStorage } from '@nativescript/secure-storage';
 import { InAppBrowser } from 'nativescript-inappbrowser';
@@ -14,6 +14,7 @@ export class MainViewModel extends Observable {
   private url: string = ''
   private urlMode: boolean = false
   private selected: string = ''
+  private longPress: boolean = false
   private secureStorage: SecureStorage
 
   constructor() {
@@ -79,11 +80,6 @@ export class MainViewModel extends Observable {
     this.notifyPropertyChange('cards', items)
   }
 
-  public isSelected(id: string): string {
-    console.log(id)
-    return ''
-  }
-
   public getCardIds(): string[] {
     return JSON.parse(this.secureStorage.getSync({ key: 'cards' }) ?? '[]').filter((id: string) => id !== null)
   }
@@ -96,7 +92,6 @@ export class MainViewModel extends Observable {
       const card = JSON.parse(this.secureStorage.getSync({ key: id }))
       card.id = id
       card.selected = (id: string) => {
-        console.log(this.urlMode, this.selected, id)
         return this.urlMode ? (this.selected === id ? '\uf192' : '\uf111') : ''
       }
       items.push(card)
@@ -158,6 +153,24 @@ export class MainViewModel extends Observable {
     }
     const list = <ListView>args.object
     const data = list.items[args.index]
+    if (this.longPress) {
+      this.longPress = false
+      Dialogs.confirm({
+        title: 'Preview',
+        message: JSON.stringify(list.items[args.index], null, '  '),
+        okButtonText: 'Close',
+        cancelButtonText: 'Supprimer'
+      }).then((result) => {
+        if (result === false) {
+          const ids = this.getCardIds()
+          delete ids[args.index]
+          this.secureStorage.setSync({ key: 'cards', value: JSON.stringify(ids) })
+          this.secureStorage.removeSync({ key: ids[args.index] })
+          this.cards = this.loadCards()
+        }
+      })
+      return
+    }
     if (this.urlMode) {
       this.selected = data.id
       this.cards = this.loadCards()
@@ -165,37 +178,14 @@ export class MainViewModel extends Observable {
       return
     }
     const url = 'https://e-id.github.io/viewer/?e-id-callback=eIdViewerDisplay#'
-    /*
-    const certKeys = Object.keys(data).filter((key) => key.includes('cert_'))
-    const dataKeys = Object.keys(data).filter((key) => key.includes('data'))
-    const fileKeys = Object.keys(data).filter((key) => key.includes('file'))
-    while ((url + encodeURIComponent(JSON.stringify(data))).length > 8000) {
-      var key = certKeys.length > 0 ? certKeys.shift() : (dataKeys.length > 0 ? dataKeys.shift() : (fileKeys.length > 0 ? fileKeys.shift() : undefined))
-      console.log(`Remove ${key} from data`);
-      if (typeof key !== 'undefined') {
-        delete data[key]
-      } else {
-        delete data[Object.keys(data).pop()]
-      }
-    }
-    */
-    console.log((url + encodeURIComponent(JSON.stringify(data))).length, url + encodeURIComponent(JSON.stringify(data)))
-    // Utils.openUrl(url + encodeURIComponent(JSON.stringify(data)))
     InAppBrowser.open(url + encodeURIComponent(JSON.stringify(data)))
-    // Dialogs.confirm({
-    //   title: 'Preview',
-    //   message: JSON.stringify(list.items[args.index], null, '  '),
-    //   okButtonText: 'Close',
-    //   cancelButtonText: 'Supprimer'
-    // }).then((result) => {
-    //   if (result === false) {
-    //     const ids = this.getCardIds()
-    //     delete ids[args.index]
-    //     this.secureStorage.setSync({ key: 'cards', value: JSON.stringify(ids) })
-    //     this.secureStorage.removeSync({ key: ids[args.index] })
-    //     this.cards = this.loadCards()
-    //   }
-    // })
+  }
+
+  public onItemPress(args: GestureEventData): void {
+    if (this.menuOn) {
+      this.menuOn = false
+    }
+    this.longPress = true
   }
 
   public onUrl(urlString: string): void {
