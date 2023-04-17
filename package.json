@@ -5,6 +5,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@heywhy/ns-secure-storage": "^0.3.0",
     "@nativescript-community/appurl": "^1.4.2",
     "@nativescript/core": "~8.5.0",
     "@nativescript/secure-storage": "^3.0.0",
@@ -15,6 +16,7 @@
   },
   "devDependencies": {
     "@nativescript/android": "8.5.0",
+    "@nativescript/ios": "8.5.1",
     "@nativescript/preview-cli": "1.0.2",
     "@nativescript/types": "~8.5.0",
     "@nativescript/webpack": "~5.0.14",

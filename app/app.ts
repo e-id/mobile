@@ -9,6 +9,7 @@ import { handleOpenURL, AppURL } from '@nativescript-community/appurl';
 import { MainViewModel } from './main-view-model';
 
 function handleUrl(urlString: string) {
+  console.log(urlString)
   if (urlString.startsWith('e-id://')) {
     urlString = 'https://' + urlString.substring(7)
     const mainPage = Frame.topmost().currentPage

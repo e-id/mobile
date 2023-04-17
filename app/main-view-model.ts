@@ -1,8 +1,9 @@
 import * as rs from 'jsrsasign'
 
-import { Button, EventData, Observable, StackLayout, Dialogs, inputType, Http, ListView, ItemEventData, Utils, GestureEventData } from '@nativescript/core'
+import { Button, EventData, Observable, StackLayout, Dialogs, inputType, Http, ListView, ItemEventData, Utils, GestureEventData, isAndroid, isIOS } from '@nativescript/core'
 import { BarcodeScanner } from 'nativescript-barcodescanner';
-import { SecureStorage } from '@nativescript/secure-storage';
+import { SecureStorage as AndroidSecureStorage } from '@nativescript/secure-storage';
+import { SecureStorage } from '@heywhy/ns-secure-storage';
 import { InAppBrowser } from 'nativescript-inappbrowser';
 
 export class MainViewModel extends Observable {
@@ -15,11 +16,16 @@ export class MainViewModel extends Observable {
   private urlMode: boolean = false
   private selected: string = ''
   private longPress: boolean = false
-  private secureStorage: SecureStorage
+  private secureStorage: AndroidSecureStorage|SecureStorage
 
   constructor() {
     super()
-    this.secureStorage = new SecureStorage()
+    if (isAndroid) {
+      this.secureStorage = new AndroidSecureStorage()
+    }
+    if (isIOS) {
+      this.secureStorage = new SecureStorage()
+    }
     this.cards = this.loadCards()
   }
 
@@ -101,9 +107,10 @@ export class MainViewModel extends Observable {
 
   public layoutChanged(args: EventData): void {
     const layout = <StackLayout>args.object
-    this.fabLeft = Math.round(layout.getActualSize().width - 100)
-    this.fabTop = Math.round(layout.getActualSize().height - 100)
+    this.fabLeft = Math.round(layout.getActualSize().width - (isIOS ? 120 : 100))
+    this.fabTop = Math.round(layout.getActualSize().height - (isIOS ? 220 : 100))
     this.menuLeft = Math.round(layout.getActualSize().width - 200)
+    console.log(layout.getActualSize().width, layout.getActualSize().height, this.fabLeft, this.fabTop)
   }
 
   public onMenu(): void {

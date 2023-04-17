@@ -1,25 +1,24 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded" navigatingTo="navigatingTo" >
     <ActionBar>
       <StackLayout orientation="horizontal">
-        <Image src="res://logo" width="32" height="32" verticalAlignment="center" />
+        <android>
+          <Image src="res://logo" width="32" height="32" verticalAlignment="center" />
+        </android>
+        <ios>
+          <Image src="~/assets/logo.png" width="32" height="32" verticalAlignment="center" />
+        </ios>
         <Label text="Open e-ID" fontSize="20" verticalAlignment="center" />
       </StackLayout>
-      <ActionItem position="right" tap="{{ onMenu }}">
-        <Button text="{{ menuIcon }}" width="40" class="fas" />
+      <ActionItem android.position="menuBar" ios.position="right" tap="{{ onMenu }}">
+        <android>
+          <Button text="{{ menuIcon }}" width="40" class="fas" />
+        </android>
+        <ios>
+          <Image src="~/assets/icon_menu.png" />
+        </ios>
       </ActionItem>
     </ActionBar>
-
-    <AbsoluteLayout id="fabView">
-      <Button
-        id="fabButton"
-        text="&#xf029;"
-        left="{{ fabLeft }}"
-        top="{{ fabTop }}"
-        width="80"
-        height="80"
-        class="fas fab-button"
-        tap="{{ onFab }}"
-      />
+    <AbsoluteLayout id="fabView" style="width: 100%; height: 100%;">
       <StackLayout id="mainView" layoutChanged="{{ layoutChanged }}" style="width: 100%; height: 100%;">
         <ListView
           items="{{ cards }}"
@@ -45,5 +44,31 @@
         <Button text="Settings" id="settings" tap="{{ onMenuItem }}" />
         <Button text="About" id="about" tap="{{ onMenuItem }}" />
       </StackLayout>
+      <android>
+        <Button
+          id="fabButton"
+          text="&#xf029;"
+          top="{{ fabTop }}"
+          left="{{ fabLeft }}"
+          width="80"
+          height="80"
+          fontSize="40"
+          class="fas fab-button"
+          tap="{{ onFab }}"
+        />
+      </android>
+      <ios>
+        <Button
+          id="fabButton"
+          text="Scan"
+          top="{{ fabTop }}"
+          left="{{ fabLeft }}"
+          width="80"
+          height="80"
+          fontSize="20"
+          class="fab-button"
+          tap="{{ onFab }}"
+        />
+      </ios>
     </AbsoluteLayout>
 </Page>
