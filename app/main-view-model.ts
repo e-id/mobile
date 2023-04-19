@@ -1,20 +1,19 @@
 import * as rs from 'jsrsasign'
 
-import { Button, EventData, Observable, StackLayout, Dialogs, inputType, Http, ListView, ItemEventData, Utils, GestureEventData, isAndroid, isIOS } from '@nativescript/core'
+import { Button, EventData, Observable, StackLayout, Dialogs, inputType, Http, ListView, ItemEventData, Utils, GestureEventData, isAndroid, isIOS, ActionItem } from '@nativescript/core'
 import { BarcodeScanner } from 'nativescript-barcodescanner';
 import { SecureStorage as AndroidSecureStorage } from '@nativescript/secure-storage';
 import { SecureStorage } from '@heywhy/ns-secure-storage';
 import { InAppBrowser } from 'nativescript-inappbrowser';
+import { Menu } from 'nativescript-menu';
 
 export class MainViewModel extends Observable {
   private _fabLeft: number = 0
   private _fabTop: number = 0
-  private _menuLeft: number = 0
-  private _menuOn: boolean = false
   private _cards: any[] = []
+  private _selected: string = ''
   private url: string = ''
   private urlMode: boolean = false
-  private selected: string = ''
   private longPress: boolean = false
   private secureStorage: AndroidSecureStorage|SecureStorage
 
@@ -51,32 +50,6 @@ export class MainViewModel extends Observable {
     }
   }
 
-  get menuLeft(): number {
-    return this._menuLeft
-  }
-
-  set menuLeft(left: number) {
-    if (left !== this._menuLeft) {
-      this._menuLeft = left
-      this.notifyPropertyChange('menuLeft', left)
-    }
-  }
-
-  get menuOn(): boolean {
-    return this._menuOn
-  }
-
-  set menuOn(on: boolean) {
-    if (on !== this._menuOn) {
-      this._menuOn = on
-      this.notifyPropertyChange('menuOn', on)
-    }
-  }
-
-  get menuIcon(): string {
-    return this.urlMode && this.selected !== '' ? '\uf08e' : '\uf0c9'
-  }
-
   get cards(): any[] {
     return this._cards
   }
@@ -84,6 +57,17 @@ export class MainViewModel extends Observable {
   set cards(items: any[]) {
     this._cards = items
     this.notifyPropertyChange('cards', items)
+  }
+
+  get selected(): string {
+    return this._selected
+  }
+
+  set selected(selection: string) {
+    if (selection !== this._selected) {
+      this._selected = selection
+      this.notifyPropertyChange('selected', selection)
+    }
   }
 
   public getCardIds(): string[] {
@@ -109,18 +93,15 @@ export class MainViewModel extends Observable {
     const layout = <StackLayout>args.object
     this.fabLeft = Math.round(layout.getActualSize().width - (isIOS ? 120 : 100))
     this.fabTop = Math.round(layout.getActualSize().height - (isIOS ? 220 : 100))
-    this.menuLeft = Math.round(layout.getActualSize().width - 200)
-    console.log(layout.getActualSize().width, layout.getActualSize().height, this.fabLeft, this.fabTop)
   }
 
-  public onMenu(): void {
+  public onMenu(args: EventData): void {
     if (this.urlMode && this.selected !== '') {
       const data = this._cards.filter((item) => item.id === this.selected).shift()
       const url = this.url
       this.urlMode = false
       this.url = ''
       this.selected = ''
-      this.notifyPropertyChange('menuIcon', this.menuIcon)
       this.cards = this.loadCards()
       const certKeys = Object.keys(data).filter((key) => key.includes('cert_'))
       const dataKeys = Object.keys(data).filter((key) => key.includes('data'))
@@ -137,33 +118,32 @@ export class MainViewModel extends Observable {
       console.log(url + encodeURIComponent(JSON.stringify(data)))
       Utils.openUrl(url + encodeURIComponent(JSON.stringify(data)))
     } else {
-      this.menuOn = !this.menuOn
-    }
-  }
-
-  public hideMenu(): void {
-    console.log('hideMenu')
-    this.menuOn = false
-  }
-
-  public onMenuItem(args: EventData): void {
-    const button = <Button>args.object
-    this.menuOn = false;
-    if (button.id === 'scan') {
-      this.onFab()
+      if(isIOS) {
+        const self = this
+        Menu.popup({
+          view: (<ActionItem>args.object).actionView,
+          actions: [
+            { id: 'scan', title: 'Scan' },
+            { id: 'settings', title: 'Settings' },
+            { id: 'about', title: 'About' }
+          ],
+          cancelButtonText: 'Cancel'
+        }).then(action => {
+            if (action.id === 'scan') {
+              self.onFab()
+            }
+        }).catch(console.log)
+      }
     }
   }
 
   public onItemTap(args: ItemEventData): void {
-    if (this.menuOn) {
-      this.menuOn = false
-    }
     const list = <ListView>args.object
     const data = list.items[args.index]
     if (this.longPress) {
       this.longPress = false
       Dialogs.confirm({
-        title: 'Preview',
+        title: 'Source',
         message: JSON.stringify(list.items[args.index], null, '  '),
         okButtonText: 'Close',
         cancelButtonText: 'Supprimer'
@@ -181,7 +161,6 @@ export class MainViewModel extends Observable {
     if (this.urlMode) {
       this.selected = data.id
       this.cards = this.loadCards()
-      this.notifyPropertyChange('menuIcon', this.menuIcon)
       return
     }
     const url = 'https://e-id.github.io/viewer/?e-id-callback=eIdViewerDisplay#'
@@ -189,9 +168,6 @@ export class MainViewModel extends Observable {
   }
 
   public onItemPress(args: GestureEventData): void {
-    if (this.menuOn) {
-      this.menuOn = false
-    }
     this.longPress = true
   }
 
@@ -211,9 +187,6 @@ export class MainViewModel extends Observable {
   }
 
   public onFab(): void {
-    if (this.menuOn) {
-      this.menuOn = false
-    }
     let barcodescanner = new BarcodeScanner()
     barcodescanner.scan({
       formats: 'QR_CODE, EAN_13',

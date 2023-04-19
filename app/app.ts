@@ -18,6 +18,14 @@ function handleUrl(urlString: string) {
   }
 }
 
+Application.on('launch', (args: any) => {
+  if (args.iOS) {
+    handleOpenURL((appURL: AppURL) => {
+      handleUrl(appURL.toString())
+    });
+  }
+})
+
 Application.on('resume', (args: any) => {
   if (args.android) {
     const activity = args.android

@@ -7,16 +7,28 @@
         <ios>
           <Image src="~/assets/logo.png" width="32" height="32" verticalAlignment="center" />
         </ios>
-        <Label text="Open e-ID" fontSize="20" verticalAlignment="center" />
+        <Label text="e-ID mobile" fontSize="20" verticalAlignment="center" />
       </StackLayout>
-      <ActionItem android.position="menuBar" ios.position="right" tap="{{ onMenu }}">
-        <android>
-          <Button text="{{ menuIcon }}" width="40" class="fas" />
-        </android>
-        <ios>
+      <android>
+        <ActionItem visibility="{{ selected !== '' ? 'visible' : 'collapsed' }}" android.position="menuBar" ios.position="left" tap="{{ onMenu }}">
+          <Button text="&#xf08e;" width="40" class="fas" />
+        </ActionItem>
+      </android>
+      <ios visibility="{{ selected !== '' ? 'visible' : 'collapsed' }}" tap="{{ onMenu }}">
+        <ActionItem visibility="{{ selected !== '' ? 'visible' : 'collapsed' }}" android.position="menuBar" ios.position="left" tap="{{ onMenu }}">
           <Image src="~/assets/icon_menu.png" />
-        </ios>
-      </ActionItem>
+        </ActionItem>
+        <ActionItem ios.position="right" ios.systemIcon="9" />
+      </ios>
+      <ios>
+        <ActionItem ios.position="right" ios.systemIcon="9" />
+        <Image src="~/assets/icon_menu.png" />
+      </ios>
+      <android>
+        <ActionItem android.position="popup" text="Scan" id="scan" tap="{{ onFab }}" />
+        <ActionItem android.position="popup" text="Settings" id="settings" tap="" />
+        <ActionItem android.position="popup" text="About" id="about" tap="" />
+      </android>
     </ActionBar>
     <AbsoluteLayout id="fabView" style="width: 100%; height: 100%;">
       <StackLayout id="mainView" layoutChanged="{{ layoutChanged }}" style="width: 100%; height: 100%;">
@@ -38,11 +50,6 @@
             </StackLayout>
           </ListView.itemTemplate>
         </ListView>
-      </StackLayout>
-      <StackLayout id="menuView" class="menu" left="{{ menuLeft }}" visibility="{{ menuOn ? 'visible' : 'collapse' }}">
-        <Button text="Scan" id="scan" tap="{{ onMenuItem }}" />
-        <Button text="Settings" id="settings" tap="{{ onMenuItem }}" />
-        <Button text="About" id="about" tap="{{ onMenuItem }}" />
       </StackLayout>
       <android>
         <Button
