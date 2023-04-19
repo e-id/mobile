@@ -1,6 +1,7 @@
 import * as rs from 'jsrsasign'
 
-import { Button, EventData, Observable, StackLayout, Dialogs, inputType, Http, ListView, ItemEventData, Utils, GestureEventData, isAndroid, isIOS, ActionItem } from '@nativescript/core'
+import { EventData, Observable, StackLayout, Dialogs, inputType, Http, ListView, ItemEventData, Utils, GestureEventData, isAndroid, isIOS, ActionItem } from '@nativescript/core'
+import { DeviceInfo } from 'nativescript-dna-deviceinfo';
 import { BarcodeScanner } from 'nativescript-barcodescanner';
 import { SecureStorage as AndroidSecureStorage } from '@nativescript/secure-storage';
 import { SecureStorage } from '@heywhy/ns-secure-storage';
@@ -12,8 +13,8 @@ export class MainViewModel extends Observable {
   private _fabTop: number = 0
   private _cards: any[] = []
   private _selected: string = ''
-  private url: string = ''
   private urlMode: boolean = false
+  private url: string = ''
   private longPress: boolean = false
   private secureStorage: AndroidSecureStorage|SecureStorage
 
@@ -82,7 +83,7 @@ export class MainViewModel extends Observable {
       const card = JSON.parse(this.secureStorage.getSync({ key: id }))
       card.id = id
       card.selected = (id: string) => {
-        return this.urlMode ? (this.selected === id ? '\uf192' : '\uf111') : ''
+        return this.urlMode ? (this.selected === id ? (isAndroid ? '\uf192' : '~/assets/radio_checked.png') : (isAndroid ? '\uf111' : '~/assets/radio.png')) : ''
       }
       items.push(card)
     })
@@ -96,6 +97,25 @@ export class MainViewModel extends Observable {
   }
 
   public onMenu(args: EventData): void {
+  if(isIOS) {
+      const self = this
+      Menu.popup({
+        view: (<ActionItem>args.object).actionView,
+        actions: [
+          { id: 'scan', title: 'Scan' },
+          { id: 'settings', title: 'Settings' },
+          { id: 'about', title: 'About' }
+        ],
+        cancelButtonText: 'Cancel'
+      }).then(action => {
+          if (action.id === 'scan') {
+            self.onFab()
+          }
+      }).catch(console.log)
+    }
+  }
+
+  public onConfirm(args: EventData): void {
     if (this.urlMode && this.selected !== '') {
       const data = this._cards.filter((item) => item.id === this.selected).shift()
       const url = this.url
@@ -117,23 +137,6 @@ export class MainViewModel extends Observable {
       }
       console.log(url + encodeURIComponent(JSON.stringify(data)))
       Utils.openUrl(url + encodeURIComponent(JSON.stringify(data)))
-    } else {
-      if(isIOS) {
-        const self = this
-        Menu.popup({
-          view: (<ActionItem>args.object).actionView,
-          actions: [
-            { id: 'scan', title: 'Scan' },
-            { id: 'settings', title: 'Settings' },
-            { id: 'about', title: 'About' }
-          ],
-          cancelButtonText: 'Cancel'
-        }).then(action => {
-            if (action.id === 'scan') {
-              self.onFab()
-            }
-        }).catch(console.log)
-      }
     }
   }
 
@@ -146,7 +149,7 @@ export class MainViewModel extends Observable {
         title: 'Source',
         message: JSON.stringify(list.items[args.index], null, '  '),
         okButtonText: 'Close',
-        cancelButtonText: 'Supprimer'
+        cancelButtonText: 'Delete'
       }).then((result) => {
         if (result === false) {
           const ids = this.getCardIds()
@@ -187,6 +190,24 @@ export class MainViewModel extends Observable {
   }
 
   public onFab(): void {
+    const self = this
+    if (isIOS && DeviceInfo.isEmulator) {
+      Dialogs.prompt({
+        title: 'Code (simulator)',
+        message: 'Please enter the code from the QR code',
+        okButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        defaultText: ''
+      }).then(function (prompt) {
+        if (prompt.result === true) {
+          console.log(prompt.text)
+          setTimeout(() => {
+            self.addPrompt(prompt.text)
+          }, 1000)
+        }
+      })
+      return
+    }
     let barcodescanner = new BarcodeScanner()
     barcodescanner.scan({
       formats: 'QR_CODE, EAN_13',
@@ -194,28 +215,8 @@ export class MainViewModel extends Observable {
       openSettingsIfPermissionWasPreviouslyDenied: true,
       presentInRootViewController: true
     }).then((scan) => {
-      const self = this;
       setTimeout(() => {
-        Dialogs.prompt({
-          title: 'One-time password (OTP)',
-          message: 'Please enter your one-time password (OTP) for this import',
-          okButtonText: 'Confirm',
-          cancelButtonText: 'Cancel',
-          defaultText: '',
-          inputType: inputType.password
-        }).then(function (prompt) {
-          if (prompt.result === true) {
-            self.add(scan.text, prompt.text, (success: boolean) => {
-              if (success === false) {
-                Dialogs.alert({
-                  title: 'Password',
-                  message: 'Invalid one-time password (OTP). Please try again.',
-                  okButtonText: 'Close'
-                })
-              }
-            })
-          }
-        })
+        self.addPrompt(scan.text)
       }, 1000)
       }, (errorMessage) => {
         console.log(errorMessage)
@@ -223,8 +224,35 @@ export class MainViewModel extends Observable {
     )
   }
 
+  private addPrompt(code: string) {
+    const self = this
+    Dialogs.prompt({
+      title: 'One-time password (OTP)',
+      message: 'Please enter your one-time password (OTP) for this import',
+      okButtonText: 'Confirm',
+      cancelButtonText: 'Cancel',
+      defaultText: '',
+      inputType: inputType.password
+    }).then(function (prompt) {
+      if (prompt.result === true) {
+        self.add(code, prompt.text, (success: boolean) => {
+          if (success === false) {
+            Dialogs.alert({
+              title: 'Password',
+              message: 'Invalid one-time password (OTP). Please try again.',
+              okButtonText: 'Close'
+            })
+          }
+        })
+      }
+    })
+  }
+
   public add(qrCode: string, password: string, callback: Function): void {
+    console.log(qrCode)
+    const self = this
     Http.getJSON('https://dweet.io/get/dweets/for/' + qrCode).then((result: any) => {
+      console.log(result)
       if (result.this === 'succeeded') {
         try {
           // remove dweet by putting 5 dummy dweets
@@ -267,11 +295,11 @@ export class MainViewModel extends Observable {
             })
           })
           const id = 'card-' + new Date().getTime()
-          const ids = this.getCardIds()
+          const ids = self.getCardIds()
           ids.push(id)
-          this.secureStorage.setSync({ key: 'cards', value: JSON.stringify(ids) })
-          this.secureStorage.setSync({ key: id, value: JSON.stringify(card) })
-          this.cards = this.loadCards()
+          self.secureStorage.setSync({ key: 'cards', value: JSON.stringify(ids) })
+          self.secureStorage.setSync({ key: id, value: JSON.stringify(card) })
+          self.cards = self.loadCards()
           callback(true)
           return
         } catch(e) {
@@ -280,7 +308,7 @@ export class MainViewModel extends Observable {
       } else {
         // try again
         setTimeout(() => {
-          this.add(qrCode, password, callback)
+          self.add(qrCode, password, callback)
         }, 1250)
       }
       return
